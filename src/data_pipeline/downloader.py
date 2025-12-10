@@ -15,9 +15,9 @@ class Downloader(ABC):
     def download_and_save_dataset(
         self,
         output_path: Path,
-        quarters: Optional[list[int]]=None,
-        years: Optional[list[int]]=None,
-        tickers: Optional[list[str]]=None,
+        quarters: Optional[list[int]] = None,
+        years: Optional[list[int]] = None,
+        tickers: Optional[list[str]] = None,
 
     ):
         """Downloads and filters the dataset based on the provided criteria.
@@ -59,9 +59,9 @@ class Downloader(ABC):
     def _filter(
         self,
         df: pd.DataFrame,
-        quarters: Optional[list[int]]=None,
-        years: Optional[list[int]]=None,
-        tickers: Optional[list[str]]=None
+        quarters: Optional[list[int]] = None,
+        years: Optional[list[int]] = None,
+        tickers: Optional[list[str]] = None
     ) -> None:
         """Abstract method to filter the DataFrame based on quarters, years, and tickers.
         
@@ -83,8 +83,8 @@ class EarningsTranscriptsDownloader(Downloader):
 
     def _validate_date_filters(
         self,
-        quarters: Optional[list[int]]=None,
-        years: Optional[list[int]]=None,
+        quarters: Optional[list[int]] = None,
+        years: Optional[list[int]] = None,
     ):
         """Validates the quarters and years filters for the earnings transcripts dataset.
         Args:
@@ -116,9 +116,9 @@ class EarningsTranscriptsDownloader(Downloader):
     def _filter(
         self,
         df: pd.DataFrame,
-        quarters: Optional[list[int]]=None,
-        years: Optional[list[int]]=None,
-        tickers: Optional[list[str]]=None
+        quarters: Optional[list[int]] = None,
+        years: Optional[list[int]] = None,
+        tickers: Optional[list[str]] = None
     ) -> pd.DataFrame:
         """Filters the DataFrame based on quarters, years, and tickers.
 
@@ -150,8 +150,8 @@ class EarningsQADownloader(Downloader):
 
     def _validate_date_filters(
         self,
-        quarters: Optional[list[int]]=None,
-        years: Optional[list[int]]=None,
+        quarters: Optional[list[int]] = None,
+        years: Optional[list[int]] = None,
     ):
         """Validates the quarters and years filters for the earnings qa dataset.
         Args:
@@ -185,9 +185,9 @@ class EarningsQADownloader(Downloader):
     def _filter(
         self,
         df: pd.DataFrame,
-        quarters: Optional[list[int]]=None,
-        years: Optional[list[int]]=None,
-        tickers: Optional[list[str]]=None
+        quarters: Optional[list[int]] = None,
+        years: Optional[list[int]] = None,
+        tickers: Optional[list[str]] = None
     ) -> pd.DataFrame:
         """Filters the DataFrame based on quarters, years, and tickers.
 
