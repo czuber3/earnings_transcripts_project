@@ -88,3 +88,51 @@ class VectorDB:
             embeddings=embeddings,
             metadatas=metadatas
         )
+    
+    def search(
+        self,
+        query_embedding: List[float],
+        collection_name: str,
+        ticker: Optional[str] = None,
+        year: Optional[int] = None,
+        quarter: Optional[int] = None,
+        n_results: Optional[int] = 10
+    ) -> List[EarningsTranscriptChunk]:
+        """ Queries the given collection with the query embedding.
+        
+        Args:
+            query_embedding (str): Embedding used to query the DB.
+            colleciton_name (str): name of the collection to query.
+            ticker (Optional(str)): ticker to filter to.
+            year (Optional(str)): year to filter to.
+            quarter (Optionl[str]): quarter to filter to.
+            n_results (Optional[int]): number of results to return
+        Returns:
+            List of EarningsTranscriptChunks holding the resulting text and 
+            metadatas.
+        """
+        collection = self._get_or_create_collection(collection_name)
+
+        # build filter
+        where = {}
+        if ticker is not None:
+            where["ticker"] = ticker
+        if year is not None:
+            where["year"] = year
+        if quarter is not None:
+            where["quarter"] = quarter
+
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=n_results,
+            where=where if where else None
+        )
+
+        return [
+            EarningsTranscriptChunk(
+                text=results['documents'][0][idx],
+                ticker=results['metadatas'][0][idx]['ticker'],
+                quarter=results['metadatas'][0][idx]['quarter'],
+                year=results['metadatas'][0][idx]['year']
+            ) for idx in range(len(results['documents'][0]))
+        ]
