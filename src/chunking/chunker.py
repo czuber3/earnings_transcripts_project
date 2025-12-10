@@ -5,8 +5,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer, util
 import spacy
 
-from text_embedder import TextEmbedder
-
+from src.text_embedding.text_embedder import TextEmbedder
+from .earnings_transcript_chunk import EarningsTranscriptChunk
 
 class BaseChunker(ABC):
     """Base class for text chunkers."""
@@ -16,11 +16,15 @@ class BaseChunker(ABC):
     
     @abstractmethod
     def chunk(
-            self, 
-            text: str, 
-            max_chunk_size: int = 1000, 
-            overlap: int = 200
-        ) -> List[str]:
+        self, 
+        text: str,
+        ticker: str,
+        year: int,
+        quarter: int,
+        max_chunk_size: int = 1000, 
+        overlap: int = 200,
+        **kwargs
+    ) -> List[EarningsTranscriptChunk]:
         """Chunks the text into smaller segments.
 
         Args:
@@ -40,15 +44,23 @@ class RecursiveChunker:
         super().__init__()
     
     def chunk(
-            self, 
-            text: str, 
-            max_chunk_size: int = 1000, 
-            overlap: int = 200
-        ) -> List[str]:
-        """Chunks the text into smaller segments.
+        self, 
+        text: str,
+        ticker: str,
+        year: int,
+        quarter: int,
+        max_chunk_size: int = 1000, 
+        overlap: int = 200,
+        **kwargs
+    ) -> List[EarningsTranscriptChunk]:
+        """Chunks the text into smaller segments using recursive character
+        chunking.
 
         Args:
-            text (str): The input text to chunk.
+            text (str): The text of the earnings transcript.
+            ticker (str): The earnings transcript ticker.
+            year (int): The year of the earnings transcript.
+            quarter (int): The quarter of the earnings transcript.
             max_chunk_size (int): Maximum size of each chunk in characters.
             overlap (int): Number of overlapping characters between chunks.
 
@@ -60,29 +72,50 @@ class RecursiveChunker:
             chunk_overlap=overlap,
             separators=["\n\n", "\n", " ", ""]
         )
-        return splitter.split_text(text)
+        text_chunks = splitter.split_text(text)
+        return [
+            EarningsTranscriptChunk(
+                text=text_chunk,
+                ticker=ticker,
+                year=year,
+                quarter=quarter)
+            for text_chunk in text_chunks
+        ]
 
 class SemanticChunker:
     """A chunker that splits text based on semantic similarity using embeddings."""
 
     def __init__(self, text_embedder: TextEmbedder):
         super().__init__()
-        self.nlp = spacy.load("en_core_web_sm")
+
+        try: # spacy model to split sentences
+            self.nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            print("en_core_web_sm Model not found. Run `python -m spacy download en_core_web_sm`")
+            raise OSError
+        
         self.text_embedder = text_embedder
     
     def chunk(
-            self, 
-            text: str, 
-            max_chunk_size: int = 1000, 
-            overlap: int = 200, 
-            similarity_threshold: int = 0.4
-        ) -> List[str]:
+        self, 
+        text: str,
+        ticker: str,
+        year: int,
+        quarter: int,
+        max_chunk_size: int = 1000, 
+        overlap: int = 200,
+        similarity_threshold: float = 0.4
+    ) -> List[EarningsTranscriptChunk]:
         """Chunks the text into semantically similar segments.
 
         Args:
-            text (str): The input text to chunk.
+            text (str): The text of the earnings transcript.
+            ticker (str): The earnings transcript ticker.
+            year (int): The year of the earnings transcript.
+            quarter (int): The quarter of the earnings transcript.
             max_chunk_size (int): Maximum size of each chunk in characters.
             overlap (int): Number of overlapping characters between chunks.
+            similarity_threshold (float): Threshold used to structure text.
 
         Returns:
             List[str]: A list of text chunks.
@@ -116,4 +149,12 @@ class SemanticChunker:
             chunk_overlap=overlap,
             separators=["\n\n", "\n", " ", ""]
         )
-        return splitter.split_text(full_text)
+        text_chunks = splitter.split_text(text)
+        return [
+            EarningsTranscriptChunk(
+                text=text_chunk,
+                ticker=ticker,
+                year=year,
+                quarter=quarter)
+            for text_chunk in text_chunks
+        ]

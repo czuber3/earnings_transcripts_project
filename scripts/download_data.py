@@ -19,7 +19,7 @@ SRC = ROOT / "src"
 sys.path.insert(0, str(SRC))
 
 try:
-    from data_pipeline.downloader import (
+    from dataset.downloader import (
         EarningsTranscriptsDownloader,
         EarningsQADownloader,
     )
