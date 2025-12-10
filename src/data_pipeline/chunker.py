@@ -5,6 +5,9 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer, util
 import spacy
 
+from text_embedder import TextEmbedder
+
+
 class BaseChunker(ABC):
     """Base class for text chunkers."""
 
@@ -62,11 +65,10 @@ class RecursiveChunker:
 class SemanticChunker:
     """A chunker that splits text based on semantic similarity using embeddings."""
 
-    def __init__(self, embedding_model: str = "FinLang/finance-embeddings-investopedia"):
+    def __init__(self, text_embedder: TextEmbedder):
         super().__init__()
         self.nlp = spacy.load("en_core_web_sm")
-        self.embedding_model = embedding_model
-        self.model = SentenceTransformer(embedding_model)
+        self.text_embedder = text_embedder
     
     def chunk(
             self, 
@@ -90,8 +92,10 @@ class SemanticChunker:
         sentences = [sent.text for sent in doc.sents]
         
         # compute embeddings and similarities for sentences
-        embeddings = self.model.encode(sentences)
-        similarities = [util.cos_sim(embeddings[i], embeddings[i+1]) for i in range(len(embeddings)-1)]
+        text_embeddings = self.text_embedder.embed_texts(sentences)
+        similarities = [
+            util.cos_sim(text_embeddings[i], text_embeddings[i+1]) for i in range(len(text_embeddings)-1)
+            ]
 
         # Simple threshold-based segmentation
         paragraphs = []
