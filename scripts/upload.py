@@ -45,6 +45,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--chunk-size", type=int, default=1000, help="Maximum chunk size in characters")
     p.add_argument("--chunk-overlap", type=int, default=200, help="Chunk overlap in characters")
     p.add_argument("--embedding-model", default="FinLang/finance-embeddings-investopedia", help="Embedding model name")
+    p.add_argument(
+        "--device",
+        default=None,
+        help="Device to load embeddings model on (e.g. 'cuda' or 'cpu'). If omitted, auto-detects GPU if available.",
+    )
     p.add_argument("--similarity-threshold", type=float, default=0.4, help="Similarity threshold for semantic chunker")
     p.add_argument("--batch-size", type=int, default=50, help="Embedding batch size")
     return p
@@ -63,8 +68,8 @@ def main(argv: Optional[List[str]] = None):
         raise ValueError("Input file is empty")
 
     # Initialize components
-    print("Initializing embedder and chunker...")
-    embedder = TextEmbedder(model_name=args.embedding_model)
+    print(f"Initializing embedder and chunker (device={args.device})...")
+    embedder = TextEmbedder(model_name=args.embedding_model, device=args.device)
     if args.chunker == "recursive":
         chunker = RecursiveChunker()
     else:

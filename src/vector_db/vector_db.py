@@ -114,18 +114,18 @@ class VectorDB:
         collection = self._get_or_create_collection(collection_name)
 
         # build filter
-        where = {}
+        where = {"$and": []}
         if ticker is not None:
-            where["ticker"] = ticker
+            where["$and"].append({"ticker": ticker})
         if year is not None:
-            where["year"] = year
+            where["$and"].append({"year": year})
         if quarter is not None:
-            where["quarter"] = quarter
+            where["$and"].append({"quarter": quarter})
 
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results,
-            where=where if where else None
+            where=where
         )
 
         return [

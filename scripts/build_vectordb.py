@@ -42,6 +42,7 @@ def build_vectordb(
     max_chunk_size: int = 1000,
     chunk_overlap: int = 200,
     embedding_model: str = "FinLang/finance-embeddings-investopedia",
+    device: Optional[str] = None,
     similarity_threshold: float = 0.4,
     batch_size: int = 50,
 ):
@@ -70,14 +71,14 @@ def build_vectordb(
     if chunker_type == "recursive":
         chunker = RecursiveChunker()
     elif chunker_type == "semantic":
-        text_embedder = TextEmbedder(model_name=embedding_model)
+        text_embedder = TextEmbedder(model_name=embedding_model, device=device)
         chunker = SemanticChunker(text_embedder=text_embedder)
     else:
         raise ValueError(f"Unknown chunker type: {chunker_type}")
     
     # Initialize text embedder for chunk embeddings
-    print(f"Initializing text embedder ({embedding_model})...")
-    text_embedder = TextEmbedder(model_name=embedding_model)
+    print(f"Initializing text embedder ({embedding_model}) on device={device}...")
+    text_embedder = TextEmbedder(model_name=embedding_model, device=device)
     
     # Initialize vector database
     print(f"Initializing vector database at {vectordb_path}...")
@@ -144,11 +145,15 @@ def build_vectordb(
     # Upload to vector database
     print(f"\nUploading {len(all_chunks)} chunks and embeddings to vector database...")
     try:
-        vector_db.upload(
-            collection_name=collection_name,
-            earnings_transcript_chunks=all_chunks,
-            embeddings=all_embeddings,
-        )
+        for i in range(0, len(all_chunks), batch_size):
+            batch_end = min(i + batch_size, len(all_chunks))
+            chunk__batch = all_chunks[i:batch_end]
+            embedding_batch = all_embeddings[i:batch_end]
+            vector_db.upload(
+                collection_name=collection_name,
+                earnings_transcript_chunks=chunk__batch,
+                embeddings=embedding_batch,
+            )
         print(f"Successfully uploaded all chunks to collection '{collection_name}'")
     except Exception as e:
         print(f"Error uploading to vector database: {e}")
@@ -160,6 +165,13 @@ def build_vectordb(
     print(f"  - Total chunks: {len(all_chunks)}")
     print(f"  - Embedding model: {embedding_model}")
 
+def int_with_max(max_value):
+    def _check(value):
+        v = int(value)
+        if v > max_value:
+            raise argparse.ArgumentTypeError(f"Value must be ≤ {max_value}")
+        return v
+    return _check
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
@@ -211,6 +223,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Pre-trained embedding model to use (default: FinLang/finance-embeddings-investopedia)",
     )
     p.add_argument(
+        "--device",
+        default=None,
+        help="Device to load embeddings model on (e.g. 'cuda' or 'cpu'). If omitted, auto-detects GPU if available.",
+    )
+    p.add_argument(
         "--similarity-threshold",
         type=float,
         default=0.4,
@@ -218,9 +235,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--batch-size",
-        type=int,
+        type=int_with_max(5461), # max batch size for vectordb upload
         default=50,
-        help="Number of chunks to embed in each batch (default: 50)",
+        help="Number of chunks to embed amd index in each batch (default: 50, must be less than 5461)",
     )
     return p
 
@@ -238,6 +255,7 @@ def main(argv: Optional[List[str]] = None):
             max_chunk_size=args.chunk_size,
             chunk_overlap=args.chunk_overlap,
             embedding_model=args.embedding_model,
+            device=args.device,
             similarity_threshold=args.similarity_threshold,
             batch_size=args.batch_size,
         )

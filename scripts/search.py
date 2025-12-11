@@ -7,7 +7,7 @@ Requirements:
  - Dependencies: chromadb, sentence-transformers (see project's requirements.txt)
 
 Usage:
-  python scripts/search_vectordb.py --vectordb data/chroma_db --collection earnings
+  python scripts/search_vectordb.py --vectordb data/chroma_db --collection earnings_transcripts
 
 Run the script and type queries at the prompt. Empty input exits.
 """
@@ -35,6 +35,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--vectordb", required=True, help="Path to the vector DB directory")
     p.add_argument("--collection", required=True, help="Collection name to query")
     p.add_argument("--embedding-model", default="FinLang/finance-embeddings-investopedia", help="Embedding model to use for queries")
+    p.add_argument(
+        "--device",
+        default=None,
+        help="Device to load embeddings model on (e.g. 'cuda' or 'cpu'). If omitted, auto-detects GPU if available.",
+    )
     p.add_argument("--n-results", type=int, default=5, help="Number of results to return")
     p.add_argument("--ticker", required=False, help="Optional ticker filter (e.g. AAPL)")
     p.add_argument("--year", type=int, required=False, help="Optional year filter (e.g. 2023)")
@@ -53,8 +58,8 @@ def main(argv=None):
     n_results = args.n_results
 
     # Initialize embedder and vector DB
-    print("Initializing embedder and vector DB client...")
-    embedder = TextEmbedder(model_name=args.embedding_model)
+    print(f"Initializing embedder and vector DB client (device={args.device})...")
+    embedder = TextEmbedder(model_name=args.embedding_model, device=args.device)
     vdb = VectorDB(vector_db_path=str(vectordb_path))
 
     print("Ready. Enter queries (empty line to exit).")

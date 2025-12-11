@@ -10,3 +10,6 @@ __pycache__/
 data/
 chroma_db/
 *.csv
+
+# Environment variables
+.env

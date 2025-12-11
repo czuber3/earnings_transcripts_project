@@ -3,13 +3,19 @@
 # Pinned versions tested on Windows with Python 3.11
 
 chromadb==1.3.5
+fastparquet==2024.11.0
 langchain_text_splitters==1.0.0
 mistralai==1.9.11
 numpy==1.25.2
 pandas==2.2.3
+python-dotenv==1.2.1
 sentence_transformers==5.1.2
 spacy>=3.7.0
 tqdm==4.67.1
 
 # Need to install en_core_web_sm model seperately
 # python -m spacy download en_core_web_sm
+
+# For cuda-version of torch (run after installing other requirements)
+# pip uninstall -y torch
+# pip install torch --index-url https://download.pytorch.org/whl/cu121
