@@ -61,6 +61,12 @@ Earnings call transcripts are highly **unstructured**, mixing:
 
 **Trade-off**: Semantic chunking is slower (requires embeddings of sentences) but produces higher-quality chunks for evaluation metrics like alignment rate.
 
+### Performance improvements
+
+Below is a chart comparing the performance of the semantic vs recursive character chunking strategies. These rates are calculated using an LLM evaluator which assess whether the answer to a question about the transcript is surfaced in the vector search results. We ran the evaluation 10 times on a sample of 100 questions. Each query returns 10 chunks from the transcript.
+
+![Alignment rate Semantic vs Recursive Character Chunking](docs/chunking_performance.png)
+
 ---
 
 ## Datasets
