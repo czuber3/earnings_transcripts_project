@@ -478,23 +478,13 @@ python scripts/build_vectordb.py \
 
 ## Next Steps & Future Work
 
-- **Fine-tune embeddings**: Use a domain-specific finance embedding model
-- **Hybrid chunking**: Combine recursive + semantic for optimal performance
 - **Caching**: Cache embeddings to speed up re-runs
 - **Evaluation improvements**: Extend LLMEvaluator to measure other metrics (relevance, completeness)
 - **UI dashboard**: Add a web interface for search and evaluation visualization
 - **Multi-model evaluation**: Compare Mistral with other LLMs (GPT-4, Claude, etc.)
+- **GPU Inference**: Deploy embedding model on GPU for latency improvement.
+- **Tune semantic chunking hyperparameters**: Fine-tune semantic similarity threshold to improve transcript structure.
+- **Unit tests**
+- **Logging**
 
 ---
-
-## License
-
-[Your License Here]
-
-## Contributing
-
-Pull requests welcome. Please ensure all scripts pass linting and include docstrings.
-
----
-
-**Questions?** Open an issue or check the example scripts in `notebooks/`.
