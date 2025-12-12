@@ -61,6 +61,8 @@ Earnings call transcripts are highly **unstructured**, mixing:
 
 **Trade-off**: Semantic chunking is slower (requires embeddings of sentences) but produces higher-quality chunks for evaluation metrics like alignment rate.
 
+![Raw vs chunked transcripts](docs/raw_vs_chunked_transcript.png)
+
 ### Performance improvements
 
 Below is a chart comparing the performance of the semantic vs recursive character chunking strategies. These rates are calculated using an LLM evaluator which assess whether the answer to a question about the transcript is surfaced in the vector search results. We ran the evaluation 10 times on a sample of 100 questions. Each query returns 10 chunks from the transcript.
@@ -94,6 +96,8 @@ Both datasets are automatically downloaded via `scripts/download_data.py`.
 ```
 earnings_transcripts_project/
 ├── src/
+│   ├── dataset/
+│   │   ├── downloader.py 
 │   ├── chunking/
 │   │   ├── chunker.py                 # RecursiveChunker, SemanticChunker classes
 │   │   └── earnings_transcript_chunk.py # EarningsTranscriptChunk dataclass
